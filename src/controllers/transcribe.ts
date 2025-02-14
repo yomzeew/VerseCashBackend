@@ -5,7 +5,7 @@ import axios from "axios";
 import { AssemblyAI } from 'assemblyai';
 import { extractBibleVerses } from "./bibletext";
 import {getVerses} from "./getVerse"
-const API_KEY = "ace4097e575845b1a81aa763c093f107";
+const API_KEY = process.env.API_KEY;
 export const transcribeAudio = async (req: Request, res: Response): Promise<Response | void> => {
   if (!req.file) {
     return res.status(400).json({ error: "No file uploaded" });
@@ -17,7 +17,7 @@ export const transcribeAudio = async (req: Request, res: Response): Promise<Resp
     
     // Send the file URL to AssemblyAI for transcription
     const client = new AssemblyAI({
-      apiKey: 'ace4097e575845b1a81aa763c093f107',
+      apiKey: API_KEY,
     });
     
     const FILE_URL =audioPath
