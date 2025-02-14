@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+      "target": "es6",
+      "module": "commonjs",
+      "lib": ["es6"],
+      "types": ["node"],
+      "outDir": "./dist",
+      "moduleResolution": "node",
+      "esModuleInterop": true,
+      "resolveJsonModule": true,
+      "skipLibCheck": true
+    },
+    "include": ["src/**/*", "public/workers/transcriptionWorker.js"]
+  }
+  
