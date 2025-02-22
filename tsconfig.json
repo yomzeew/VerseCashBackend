@@ -10,6 +10,6 @@
       "resolveJsonModule": true,
       "skipLibCheck": true
     },
-    "include": ["src/**/*", "public/workers/transcriptionWorker.js"]
+    "include": ["src/**/*", "public/workers/transcriptionWorker.js","types"]
   }
   

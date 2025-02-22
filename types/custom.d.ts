@@ -1,5 +1,5 @@
 // types/custom.d.ts
-import { Request } from 'express';
+import { Request } from "express";
 
 declare global {
   namespace Express {
@@ -7,11 +7,12 @@ declare global {
       user?: {
         id: number;
         email: string;
+        facebookId?:string
       };
-      otpuser?:{
-        otp:string;
-        email:string
-      }
+      otpuser?: {
+        otp: string;
+        email: string;
+      };
     }
   }
 }
