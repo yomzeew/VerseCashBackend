@@ -1,6 +1,7 @@
 // routes/auth.ts
 import { Router } from "express";
 import passport from "passport";
+import { login, register } from "../controllers/auth/AuthController";
 
 const router = Router();
 
@@ -16,7 +17,10 @@ router.get(
     const { user, token } = req.user as { user: any; token: string };
     
     // ✅ Send response with user details & JWT token
-    res.json({ message: "Login successful", user, token });
+    // res.json({ message: "Login successful", user, token });
+    // Instead of res.json(...)
+res.redirect(`biblequotation://auth/google/callback?token=${token}&user=${encodeURIComponent(JSON.stringify(user))}`);
+
   }
 );
 router.get("/facebook", passport.authenticate('facebook', { scope: ['email'] }));
@@ -29,8 +33,26 @@ router.get(
     const { user, token } = req.user as { user: any; token: string };
     
     // ✅ Send response with user details & JWT token
-    res.json({ message: "Login successful", user, token });
+    // res.json({ message: "Login successful", user, token });
+    // Instead of res.json(...)
+res.redirect(`biblequotation://auth/facebook/callback?token=${token}&user=${encodeURIComponent(JSON.stringify(user))}`);
+
   }
 );
+
+router.post('/login', async (req, res, next) => {
+  try {
+    await login(req, res, next);
+  } catch (error) {
+    next(error);
+  }
+});
+router.post('/register', async (req, res, next) => {
+  try {
+    await register(req, res, next);
+  } catch (error) {
+    next(error);
+  }
+});
 
 export default router;

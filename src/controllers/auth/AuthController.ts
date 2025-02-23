@@ -61,19 +61,24 @@ export const register = async (
       message: "User registered successfully.",
       user: {
         id: newUser.id,
-        email: newUser.email,
+        facebookId:newUser.facebookId || null,
+        googleId:newUser.googleId || null,
+        email: newUser.email ,
         fullname: newUser.fullname,
+        
       },
     });
   } catch (error: any) {
     console.error("Error during registration:", error.message || error);
+    next(error)
     return res.status(500).json({ message: "Internal Server Error." });
   }
 };
 
 export const login = async (
   req: Request<{}, {}, LoginRequestBody>,
-  res: Response
+  res: Response,
+  next:NextFunction
 ): Promise<Response> => {
   try {
     const { email, password } = req.body;
@@ -107,13 +112,16 @@ export const login = async (
       message: "Login successful.",
       user: {
         id: user.id,
+        facebookId:user.facebookId,
+        googleId:user.googleId,
         email: user.email,
         fullname: user.fullname,
-        token,
-      },
+        
+      },token,
     });
   } catch (error: any) {
     console.error("Error during login:", error.message || error);
+    next(error);
     return res.status(500).json({ message: "Internal Server Error." });
   }
 };
