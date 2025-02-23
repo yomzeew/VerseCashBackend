@@ -4,7 +4,7 @@
       "module": "commonjs",
       "lib": ["es6"],
       "types": ["node"],
-      "outDir": "./dist",
+      "outDir": "./public",
       "moduleResolution": "node",
       "esModuleInterop": true,
       "resolveJsonModule": true,
