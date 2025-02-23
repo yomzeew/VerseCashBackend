@@ -17,27 +17,67 @@ const express_1 = require("express");
 const passport_1 = __importDefault(require("passport"));
 const AuthController_1 = require("../controllers/auth/AuthController");
 const router = (0, express_1.Router)();
-// ✅ Step 1: Redirect user to Google Login Page
-router.get("/google", passport_1.default.authenticate("google", { scope: ["profile", "email"] }));
-// ✅ Step 2: Google redirects back after login, Passport processes user data
-router.get("/google/callback", passport_1.default.authenticate("google", { session: false }), // Middleware runs `done(null, { user, token })`
-(req, res) => {
-    // ✅ Passport attaches `{ user, token }` to `req.user`
-    const { user, token } = req.user;
-    // ✅ Send response with user details & JWT token
-    // res.json({ message: "Login successful", user, token });
-    // Instead of res.json(...)
-    res.redirect(`biblequotation://auth/google/callback?token=${token}&user=${encodeURIComponent(JSON.stringify(user))}`);
+// -----------------------
+// Google OAuth Routes
+// -----------------------
+// Step 1: Redirect user to Google Login Page with a dynamic redirect URL.
+router.get("/google", (req, res, next) => {
+    try {
+        const redirectUrl = req.query.redirect_url;
+        if (!redirectUrl) {
+            return res.status(400).send("Missing redirect_url parameter");
+        }
+        // Explicitly cast the result of passport.authenticate to RequestHandler using unknown.
+        const googleAuth = passport_1.default.authenticate("google", {
+            scope: ["profile", "email"],
+            state: JSON.stringify({ redirectUrl }),
+        });
+        googleAuth(req, res, next);
+    }
+    catch (error) {
+        next(error);
+    }
 });
-router.get("/facebook", passport_1.default.authenticate('facebook', { scope: ['email'] }));
-// Facebook Callback
-router.get("/facebook/callback", passport_1.default.authenticate('facebook', { session: false }), (req, res) => {
+// Step 2: Google callback route. Retrieve the redirect URL from state.
+router.get("/google/callback", passport_1.default.authenticate("google", { session: false }), (req, res) => {
     const { user, token } = req.user;
-    // ✅ Send response with user details & JWT token
-    // res.json({ message: "Login successful", user, token });
-    // Instead of res.json(...)
-    res.redirect(`biblequotation://auth/facebook/callback?token=${token}&user=${encodeURIComponent(JSON.stringify(user))}`);
+    const stateString = req.query.state;
+    const state = stateString ? JSON.parse(stateString) : {};
+    const redirectUrl = state.redirectUrl || "biblequotation://auth/google/callback";
+    res.redirect(`${redirectUrl}?token=${token}&user=${encodeURIComponent(JSON.stringify(user))}`);
 });
+// -----------------------
+// Facebook OAuth Routes
+// -----------------------
+// Step 1: Redirect user to Facebook Login Page with a dynamic redirect URL.
+router.get("/facebook", (req, res, next) => {
+    try {
+        const redirectUrl = req.query.redirect_url;
+        if (!redirectUrl) {
+            return res.status(400).send("Missing redirect_url parameter");
+        }
+        // Explicitly cast the result of passport.authenticate to RequestHandler using unknown.
+        const facebookAuth = passport_1.default.authenticate("facebook", {
+            scope: ["email"],
+            state: JSON.stringify({ redirectUrl }),
+        });
+        facebookAuth(req, res, next);
+    }
+    catch (error) {
+        next(error);
+    }
+});
+// Step 2: Facebook callback route. Retrieve the redirect URL from state.
+router.get("/facebook/callback", passport_1.default.authenticate("facebook", { session: false }), (req, res) => {
+    const { user, token } = req.user;
+    const stateString = req.query.state;
+    const state = stateString ? JSON.parse(stateString) : {};
+    const redirectUrl = state.redirectUrl || "biblequotation://auth/facebook/callback";
+    res.redirect(`${redirectUrl}?token=${token}&user=${encodeURIComponent(JSON.stringify(user))}`);
+});
+// -----------------------
+// Local Authentication Routes
+// -----------------------
 router.post('/login', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         yield (0, AuthController_1.login)(req, res, next);

@@ -1,53 +1,102 @@
 // routes/auth.ts
-import { Router } from "express";
+import { Router, Request, Response, NextFunction, RequestHandler } from "express";
 import passport from "passport";
 import { login, register } from "../controllers/auth/AuthController";
 
 const router = Router();
 
-// ✅ Step 1: Redirect user to Google Login Page
-router.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
+// -----------------------
+// Google OAuth Routes
+// -----------------------
 
-// ✅ Step 2: Google redirects back after login, Passport processes user data
+// Step 1: Redirect user to Google Login Page with a dynamic redirect URL.
+router.get("/google", (req:any, res: any, next: NextFunction) => {
+  try {
+    const redirectUrl = req.query.redirect_url as string | undefined;
+    if (!redirectUrl) {
+      return res.status(400).send("Missing redirect_url parameter");
+    }
+
+    // Explicitly cast the result of passport.authenticate to RequestHandler using unknown.
+    const googleAuth = passport.authenticate("google", {
+      scope: ["profile", "email"],
+      state: JSON.stringify({ redirectUrl }),
+    }) as unknown as RequestHandler;
+
+    googleAuth(req, res, next);
+  } catch (error: any) {
+    next(error);
+  }
+});
+
+// Step 2: Google callback route. Retrieve the redirect URL from state.
 router.get(
   "/google/callback",
-  passport.authenticate("google", { session: false }), // Middleware runs `done(null, { user, token })`
-  (req, res) => {
-    // ✅ Passport attaches `{ user, token }` to `req.user`
+  passport.authenticate("google", { session: false }),
+  (req: Request, res: Response) => {
     const { user, token } = req.user as { user: any; token: string };
-    
-    // ✅ Send response with user details & JWT token
-    // res.json({ message: "Login successful", user, token });
-    // Instead of res.json(...)
-res.redirect(`exp://192.168.0.196:8081/auth/google/callback?token=${token}&user=${encodeURIComponent(JSON.stringify(user))}`);
+    const stateString = req.query.state as string | undefined;
+    const state = stateString ? JSON.parse(stateString) : {};
+    const redirectUrl = state.redirectUrl || "biblequotation://auth/google/callback";
 
+    res.redirect(
+      `${redirectUrl}?token=${token}&user=${encodeURIComponent(JSON.stringify(user))}`
+    );
   }
 );
-router.get("/facebook", passport.authenticate('facebook', { scope: ['email'] }));
 
-// Facebook Callback
+// -----------------------
+// Facebook OAuth Routes
+// -----------------------
+
+// Step 1: Redirect user to Facebook Login Page with a dynamic redirect URL.
+router.get("/facebook", (req:any, res:any, next: NextFunction) => {
+  try {
+    const redirectUrl = req.query.redirect_url as string | undefined;
+    if (!redirectUrl) {
+      return res.status(400).send("Missing redirect_url parameter");
+    }
+
+    // Explicitly cast the result of passport.authenticate to RequestHandler using unknown.
+    const facebookAuth = passport.authenticate("facebook", {
+      scope: ["email"],
+      state: JSON.stringify({ redirectUrl }),
+    }) as unknown as RequestHandler;
+
+    facebookAuth(req, res, next);
+  } catch (error: any) {
+    next(error);
+  }
+});
+
+// Step 2: Facebook callback route. Retrieve the redirect URL from state.
 router.get(
   "/facebook/callback",
-  passport.authenticate('facebook', { session: false }),
-  (req, res) => {
+  passport.authenticate("facebook", { session: false }),
+  (req: Request, res: Response) => {
     const { user, token } = req.user as { user: any; token: string };
-    
-    // ✅ Send response with user details & JWT token
-    // res.json({ message: "Login successful", user, token });
-    // Instead of res.json(...)
-res.redirect(`biblequotation://auth/facebook/callback?token=${token}&user=${encodeURIComponent(JSON.stringify(user))}`);
+    const stateString = req.query.state as string | undefined;
+    const state = stateString ? JSON.parse(stateString) : {};
+    const redirectUrl = state.redirectUrl || "biblequotation://auth/facebook/callback";
 
+    res.redirect(
+      `${redirectUrl}?token=${token}&user=${encodeURIComponent(JSON.stringify(user))}`
+    );
   }
 );
 
-router.post('/login', async (req, res, next) => {
+// -----------------------
+// Local Authentication Routes
+// -----------------------
+router.post('/login', async (req: Request, res: Response, next: NextFunction) => {
   try {
     await login(req, res, next);
   } catch (error) {
     next(error);
   }
 });
-router.post('/register', async (req, res, next) => {
+
+router.post('/register', async (req: Request, res: Response, next: NextFunction) => {
   try {
     await register(req, res, next);
   } catch (error) {
