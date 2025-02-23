@@ -19,7 +19,7 @@ router.get(
     // ✅ Send response with user details & JWT token
     // res.json({ message: "Login successful", user, token });
     // Instead of res.json(...)
-res.redirect(`biblequotation://auth/google/callback?token=${token}&user=${encodeURIComponent(JSON.stringify(user))}`);
+res.redirect(`exp://192.168.0.196:8081/auth/google/callback?token=${token}&user=${encodeURIComponent(JSON.stringify(user))}`);
 
   }
 );
