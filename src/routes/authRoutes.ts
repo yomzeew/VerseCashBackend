@@ -39,7 +39,7 @@ router.get(
     const state = stateString ? JSON.parse(stateString) : {};
     const redirectUrl = state.redirectUrl || "biblequotation://auth/google/callback";
 
-    res.redirect(
+   return res.redirect(
       `${redirectUrl}?token=${token}&user=${encodeURIComponent(JSON.stringify(user))}`
     );
   }
@@ -79,7 +79,7 @@ router.get(
     const state = stateString ? JSON.parse(stateString) : {};
     const redirectUrl = state.redirectUrl || "biblequotation://auth/facebook/callback";
 
-    res.redirect(
+    return res.redirect(
       `${redirectUrl}?token=${token}&user=${encodeURIComponent(JSON.stringify(user))}`
     );
   }
