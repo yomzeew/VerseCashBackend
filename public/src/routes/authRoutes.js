@@ -16,6 +16,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const passport_1 = __importDefault(require("passport"));
 const AuthController_1 = require("../controllers/auth/AuthController");
+const auth_1 = require("../middleware/auth");
 const router = (0, express_1.Router)();
 // -----------------------
 // Google OAuth Routes
@@ -44,7 +45,7 @@ router.get("/google/callback", passport_1.default.authenticate("google", { sessi
     const stateString = req.query.state;
     const state = stateString ? JSON.parse(stateString) : {};
     const redirectUrl = state.redirectUrl || "biblequotation://auth/google/callback";
-    res.redirect(`${redirectUrl}?token=${token}&user=${encodeURIComponent(JSON.stringify(user))}`);
+    return res.redirect(`${redirectUrl}?token=${token}&user=${encodeURIComponent(JSON.stringify(user))}`);
 });
 // -----------------------
 // Facebook OAuth Routes
@@ -73,7 +74,7 @@ router.get("/facebook/callback", passport_1.default.authenticate("facebook", { s
     const stateString = req.query.state;
     const state = stateString ? JSON.parse(stateString) : {};
     const redirectUrl = state.redirectUrl || "biblequotation://auth/facebook/callback";
-    res.redirect(`${redirectUrl}?token=${token}&user=${encodeURIComponent(JSON.stringify(user))}`);
+    return res.redirect(`${redirectUrl}?token=${token}&user=${encodeURIComponent(JSON.stringify(user))}`);
 });
 // -----------------------
 // Local Authentication Routes
@@ -86,6 +87,8 @@ router.post('/login', (req, res, next) => __awaiter(void 0, void 0, void 0, func
         next(error);
     }
 }));
+router.post('/sendotp', (req, res) => { (0, AuthController_1.sendotp)(req, res); });
+router.post('/verifyotp', (req, res, next) => { (0, auth_1.tokenpassword)(req, res, next); }, (req, res) => { (0, AuthController_1.verifyopt)(req, res); });
 router.post('/register', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         yield (0, AuthController_1.register)(req, res, next);
