@@ -1,7 +1,8 @@
 // routes/auth.ts
 import { Router, Request, Response, NextFunction, RequestHandler } from "express";
 import passport from "passport";
-import { login, register } from "../controllers/auth/AuthController";
+import { login, register, sendotp, verifyopt } from "../controllers/auth/AuthController";
+import { tokenpassword } from "../middleware/auth";
 
 const router = Router();
 
@@ -95,6 +96,11 @@ router.post('/login', async (req: Request, res: Response, next: NextFunction) =>
     next(error);
   }
 });
+router.post('/sendotp',(req: Request, res: Response)=>{sendotp(req,res)})
+
+router.post('/verifyotp',
+    (req: Request, res: Response,next:NextFunction)=>{tokenpassword(req,res,next)},
+    (req: Request, res: Response)=>{verifyopt(req,res)})
 
 router.post('/register', async (req: Request, res: Response, next: NextFunction) => {
   try {

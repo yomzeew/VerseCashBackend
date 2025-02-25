@@ -74,6 +74,64 @@ export const register = async (
     return res.status(500).json({ message: "Internal Server Error." });
   }
 };
+export const sendotp = async (req: Request, res: Response): Promise<Response> => {
+  try {
+    const { email } = req.body;
+
+    // Validate email
+    if (!email) {
+      return res.status(400).json({ message: "Email is required." });
+    }
+
+    // Generate a 6-digit OTP
+    const otp = crypto.randomInt(100000, 999999).toString();
+
+    // Generate a JWT token containing the OTP and email
+    const token = jwt.sign(
+      { otp, email: email },
+      process.env.JWT_SECRET || "default_secret", // Use a secure secret in production
+      { expiresIn: "5m" }
+    );
+
+    // Email Subject and HTML Template
+    const subject = "Password Reset Request";
+    const htmltemplate = VerifyTemplate(otp);
+
+    // Send the email
+    const emailResult = await sendEmailPassword(email, subject, email, () => htmltemplate);
+    if (!emailResult.success) {
+      return res.status(500).json({ message: "Failed to send email." });
+    }
+
+    // Return success response
+    return res.status(200).json({ message: "OTP sent to your email.", token });
+  } catch (error: any) {
+    console.error("Error in forgotPassword:", error.message || error);
+    return res.status(500).json({ message: "Internal Server Error." });
+  }
+};
+export const verifyopt = async (req: Request, res: Response) => {
+  try {
+    const otpjwt = req.otpuser?.otp
+    const emailjwt = req.otpuser?.email
+    const otp = req.body.otp
+    const email = req.body.email
+    console.log(emailjwt, otpjwt)
+
+    if (otpjwt !== otp || email !== emailjwt) {
+      return res.status(404).json({ message: "Invalid otp." });
+
+    }
+
+    return res.status(200).json({ message: "Email verify successfully." });
+  } catch (error: any) {
+    console.error("Error in forgotPassword:", error.message || error);
+    return res.status(500).json({ message: "Internal Server Error." });
+
+  }
+
+
+}
 
 export const login = async (
   req: Request<{}, {}, LoginRequestBody>,
