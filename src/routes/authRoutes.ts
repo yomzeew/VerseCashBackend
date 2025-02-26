@@ -96,11 +96,14 @@ router.post('/login', async (req: Request, res: Response, next: NextFunction) =>
     next(error);
   }
 });
-router.post('/sendotp',(req: Request, res: Response)=>{sendotp(req,res)})
-
+router.post('/sendotp', async (req: Request, res: Response) => {
+  sendotp(req, res);
+});
 router.post('/verifyotp',
     (req: Request, res: Response,next:NextFunction)=>{tokenpassword(req,res,next)},
-    (req: Request, res: Response)=>{verifyopt(req,res)})
+    (req: Request, res: Response)=>{verifyopt(req,res)
+
+    })
 
 router.post('/register', async (req: Request, res: Response, next: NextFunction) => {
   try {

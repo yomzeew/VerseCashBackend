@@ -18,12 +18,12 @@ User.init({
     googleId: {
         type: sequelize_1.DataTypes.STRING,
         allowNull: true, // Optional Google ID
-        unique: true,
+        unique: false,
     },
     facebookId: {
         type: sequelize_1.DataTypes.STRING,
         allowNull: true, // Optional Google ID
-        unique: true,
+        unique: false,
     },
     fullname: {
         type: sequelize_1.DataTypes.STRING,

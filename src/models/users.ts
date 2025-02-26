@@ -20,12 +20,12 @@ User.init(
     googleId: {
       type: DataTypes.STRING,
       allowNull: true, // Optional Google ID
-      unique: true,
+      unique: false,
     },
     facebookId: {
       type: DataTypes.STRING,
       allowNull: true, // Optional Google ID
-      unique: true,
+      unique: false,
     },
     fullname: {
       type: DataTypes.STRING,

@@ -73,6 +73,7 @@ const register = (req, res, next) => __awaiter(void 0, void 0, void 0, function*
 exports.register = register;
 const sendotp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        console.log('ok');
         const { email } = req.body;
         // Validate email
         if (!email) {

@@ -87,8 +87,12 @@ router.post('/login', (req, res, next) => __awaiter(void 0, void 0, void 0, func
         next(error);
     }
 }));
-router.post('/sendotp', (req, res) => { (0, AuthController_1.sendotp)(req, res); });
-router.post('/verifyotp', (req, res, next) => { (0, auth_1.tokenpassword)(req, res, next); }, (req, res) => { (0, AuthController_1.verifyopt)(req, res); });
+router.post('/sendotp', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    (0, AuthController_1.sendotp)(req, res);
+}));
+router.post('/verifyotp', (req, res, next) => { (0, auth_1.tokenpassword)(req, res, next); }, (req, res) => {
+    (0, AuthController_1.verifyopt)(req, res);
+});
 router.post('/register', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         yield (0, AuthController_1.register)(req, res, next);

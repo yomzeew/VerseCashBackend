@@ -76,6 +76,7 @@ export const register = async (
 };
 export const sendotp = async (req: Request, res: Response): Promise<Response> => {
   try {
+    console.log('ok')
     const { email } = req.body;
 
     // Validate email
