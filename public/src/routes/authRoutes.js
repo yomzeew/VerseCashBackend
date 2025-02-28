@@ -101,4 +101,6 @@ router.post('/register', (req, res, next) => __awaiter(void 0, void 0, void 0, f
         next(error);
     }
 }));
+router.post('/forgotpassword', (req, res, next) => { (0, AuthController_1.forgotPassword)(req, res, next); });
+router.post('/changepassword', (req, res, next) => { (0, auth_1.tokenpassword)(req, res, next); }, (req, res) => { (0, AuthController_1.verifypassword)(req, res); });
 exports.default = router;

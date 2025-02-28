@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.login = exports.verifyopt = exports.sendotp = exports.register = exports.getuser = void 0;
+exports.verifypassword = exports.forgotPassword = exports.login = exports.verifyopt = exports.sendotp = exports.register = exports.getuser = void 0;
 const users_1 = require("../../models/users");
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
@@ -85,7 +85,7 @@ const sendotp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const token = jsonwebtoken_1.default.sign({ otp, email: email }, process.env.JWT_SECRET || "default_secret", // Use a secure secret in production
         { expiresIn: "5m" });
         // Email Subject and HTML Template
-        const subject = "Password Reset Request";
+        const subject = "Email Verification";
         const htmltemplate = (0, emailtemplate_1.VerifyTemplate)(otp);
         // Send the email
         const emailResult = yield (0, sendEmail_1.sendEmailPassword)(email, subject, email, () => htmltemplate);
@@ -157,3 +157,57 @@ const login = (req, res, next) => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 exports.login = login;
+const forgotPassword = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { email } = req.body;
+        // Validate email
+        if (!email) {
+            return res.status(400).json({ message: "Email is required." });
+        }
+        // Check if the user exists
+        const user = yield users_1.User.findOne({ where: { email } });
+        if (!user) {
+            return res.status(404).json({ message: "User with this email does not exist." });
+        }
+        // Generate a 6-digit OTP
+        const otp = crypto_1.default.randomInt(100000, 999999).toString();
+        // Generate a JWT token containing the OTP and email
+        const token = jsonwebtoken_1.default.sign({ otp, email: user.email }, process.env.JWT_SECRET || "default_secret", // Use a secure secret in production
+        { expiresIn: "5m" });
+        // Email Subject and HTML Template
+        const subject = "Password Reset Request";
+        const htmltemplate = (0, emailtemplate_1.VerifyTemplate)(otp);
+        // Send the email
+        const emailResult = yield (0, sendEmail_1.sendEmailPassword)(email, subject, email, () => htmltemplate);
+        if (!emailResult.success) {
+            return res.status(500).json({ message: "Failed to send email." });
+        }
+        // Return success response
+        return res.status(200).json({ message: "OTP sent to your email.", token });
+    }
+    catch (error) {
+        next(error);
+        console.error("Error in forgotPassword:", error.message || error);
+        return res.status(500).json({ message: "Internal Server Error." });
+    }
+});
+exports.forgotPassword = forgotPassword;
+const verifypassword = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const email = req.body.email;
+        const newpassword = req.body.password;
+        const user = yield users_1.User.findOne({ where: { email } });
+        if (!user) {
+            return res.status(404).json({ message: "User with this email does not exist." });
+        }
+        const hashedPassword = yield bcryptjs_1.default.hash(newpassword, 10);
+        user.password = hashedPassword;
+        yield user.save();
+        return res.status(200).json({ message: "Password updated successfully." });
+    }
+    catch (error) {
+        console.error("Error in forgotPassword:", error.message || error);
+        return res.status(500).json({ message: "Internal Server Error." });
+    }
+});
+exports.verifypassword = verifypassword;
