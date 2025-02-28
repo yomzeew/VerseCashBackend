@@ -1,7 +1,7 @@
 // routes/auth.ts
 import { Router, Request, Response, NextFunction, RequestHandler } from "express";
 import passport from "passport";
-import { login, register, sendotp, verifyopt } from "../controllers/auth/AuthController";
+import { forgotPassword, login, register, sendotp, verifyopt, verifypassword } from "../controllers/auth/AuthController";
 import { tokenpassword } from "../middleware/auth";
 
 const router = Router();
@@ -112,5 +112,10 @@ router.post('/register', async (req: Request, res: Response, next: NextFunction)
     next(error);
   }
 });
+router.post('/forgotpassword',(req: Request, res: Response,next:NextFunction)=>{forgotPassword(req,res,next)})
+
+router.post('/changepassword',
+    (req: Request, res: Response,next:NextFunction)=>{tokenpassword(req,res,next)},
+    (req: Request, res: Response)=>{verifypassword(req,res)})
 
 export default router;

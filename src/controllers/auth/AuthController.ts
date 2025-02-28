@@ -95,7 +95,7 @@ export const sendotp = async (req: Request, res: Response): Promise<Response> =>
     );
 
     // Email Subject and HTML Template
-    const subject = "Password Reset Request";
+    const subject = "Email Verification";
     const htmltemplate = VerifyTemplate(otp);
 
     // Send the email
@@ -184,3 +184,68 @@ export const login = async (
     return res.status(500).json({ message: "Internal Server Error." });
   }
 };
+
+export const forgotPassword = async (req: Request, res: Response,next:NextFunction): Promise<Response> => {
+  try {
+    const { email } = req.body;
+
+    // Validate email
+    if (!email) {
+      return res.status(400).json({ message: "Email is required." });
+    }
+
+    // Check if the user exists
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.status(404).json({ message: "User with this email does not exist." });
+    }
+
+    // Generate a 6-digit OTP
+    const otp = crypto.randomInt(100000, 999999).toString();
+
+    // Generate a JWT token containing the OTP and email
+    const token = jwt.sign(
+      { otp, email: user.email },
+      process.env.JWT_SECRET || "default_secret", // Use a secure secret in production
+      { expiresIn: "5m" }
+    );
+
+    // Email Subject and HTML Template
+    const subject = "Password Reset Request";
+    const htmltemplate = VerifyTemplate(otp);
+
+    // Send the email
+    const emailResult = await sendEmailPassword(email, subject, email, () => htmltemplate);
+    if (!emailResult.success) {
+      return res.status(500).json({ message: "Failed to send email." });
+    }
+
+    // Return success response
+    return res.status(200).json({ message: "OTP sent to your email.", token });
+  } catch (error: any) {
+    next(error)
+    console.error("Error in forgotPassword:", error.message || error);
+    return res.status(500).json({ message: "Internal Server Error." });
+  }
+};
+
+export const verifypassword = async (req: Request, res: Response) => {
+  try {
+    const email = req.body.email
+    const newpassword = req.body.password
+    const user = await User.findOne({ where: { email } });
+
+    if (!user) {
+      return res.status(404).json({ message: "User with this email does not exist." });
+    }
+
+    const hashedPassword = await bcrypt.hash(newpassword, 10);
+    user.password = hashedPassword;
+    await user.save()
+    return res.status(200).json({ message: "Password updated successfully." });
+  } catch (error: any) {
+    console.error("Error in forgotPassword:", error.message || error);
+    return res.status(500).json({ message: "Internal Server Error." });
+
+  }
+}
